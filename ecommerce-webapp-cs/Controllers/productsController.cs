@@ -54,7 +54,7 @@ public class productsController : ControllerBase
 	{
 		try
 		{
-			// Map ProductCreateDto to Product entity
+			// map ProductModel to product entity
 			var product = new Product
 			{
 				ProName = productDto.ProName,
@@ -64,7 +64,7 @@ public class productsController : ControllerBase
 				CategoryId = productDto.CategoryId
 			};
 
-			// Check if the CategoryId is valid
+			// check if the CategoryId is valid
 			var category = await _context.ProductCategories.FindAsync(productDto.CategoryId);
 			if (category == null)
 			{
@@ -271,12 +271,12 @@ public class productsController : ControllerBase
 		}
 		catch (DbUpdateException ex)
 		{
-			// Check if the exception is due to a foreign key constraint
+			// check if the exception is due to a foreign key constraint
 			if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 547 || sqlEx.Number == 2627))
 			{
 				return BadRequest("Cannot delete this category because it is associated with one or more discounts.");
 			}
-			throw; // If it's not the expected exception type or code, rethrow it
+			throw; // if it's not the expected exception type or code, rethrow it
 		}
 
 		return Ok("Category deleted successfully.");

@@ -15,10 +15,12 @@ builder.Services.AddAuthentication(options =>
 	options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 	options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
+	//cookie
 .AddCookie(options =>
 {
 	options.LoginPath = "/auth/google-login";
 })
+//google api
 .AddGoogle(options =>
 {
 	options.ClientId = builder.Configuration["GoogleKeys:ClientId"];
@@ -28,7 +30,6 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSwaggerGen(c =>
 {
 	c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-	// Additional Swagger configuration if necessary
 });
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -46,7 +47,7 @@ builder.Services.AddCors(options =>
 			   .AllowAnyHeader();
 	});
 });
-
+//connectionstring here
 builder.Services.AddDbContext<ArtsContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
 
