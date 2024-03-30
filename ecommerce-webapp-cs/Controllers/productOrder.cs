@@ -1,5 +1,6 @@
 ﻿using ecommerce_webapp_cs.Models.Entities;
 using ecommerce_webapp_cs.Models.ProductModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -107,12 +108,26 @@ public class productOrder : ControllerBase
 			.Include(o => o.OrderItems)
 			.FirstOrDefaultAsync(o => o.UserId == orderDto.UserId && o.Status == "InCart");
 
-		if (order == null) return BadRequest("No cart found for the user");
+		if (order == null) return BadRequest("No cart found for the user.");
 
-		order.Status = "Placed"; 
+		// Validate and apply the voucher
+		if (!string.IsNullOrEmpty(orderDto.VoucherCode))
+		{
+			var voucher = await _context.Vouchers
+				.FirstOrDefaultAsync(v => v.Code == orderDto.VoucherCode && v.StartDate <= DateTime.UtcNow && v.Expired >= DateTime.UtcNow);
+
+			if (voucher == null)
+			{
+				return BadRequest("Invalid or expired voucher code.");
+			}
+
+			order.TotalPrice -= voucher.Amount; // Adjust total price based on the voucher
+			order.VoucherId = voucher.VoucherId; // Associate voucher with the order
+		}
+
+		order.Status = "Placed";
 		order.Note = orderDto.Note;
 		order.OrderDate = DateTime.UtcNow;
-		order.TotalPrice = order.OrderItems.Sum(oi => oi.Quantity * oi.Price);
 
 		await _context.SaveChangesAsync();
 
@@ -132,5 +147,80 @@ public class productOrder : ControllerBase
 
 		return timestamp + randomString;
 	}
+
+	[HttpPost("processPayment")]
+	public async Task<IActionResult> ProcessPayment([FromBody] PaymentDto paymentDto)
+	{
+		// Fetch the order
+		var order = await _context.Orders
+								  .FirstOrDefaultAsync(o => o.OrderId == paymentDto.OrderId && o.UserId == paymentDto.UserId);
+
+		if (order == null)
+		{
+			return BadRequest("Order not found.");
+		}
+
+		// Process the payment through the payment gateway
+		// This is a simplified example; in a real application, you would call the payment gateway's API here
+		var paymentProcessed = ProcessPaymentThroughGateway(paymentDto);
+
+		if (!paymentProcessed)
+		{
+			return BadRequest("Payment failed.");
+		}
+
+		// Update the order status to "Paid" or similar
+		order.Status = "Paid";
+		await _context.SaveChangesAsync();
+
+		var paymentRecord = new Payment
+		{
+			OrderId = order.OrderId,
+			PaymentType = "CreditCard",
+			Status = "Completed",
+			Amount = order.TotalPrice,
+			PaymentDate = DateTime.UtcNow
+		};
+		_context.Payments.Add(paymentRecord);
+		await _context.SaveChangesAsync();
+
+		return Ok("Payment processed successfully.");
+	}
+
+	[HttpPost("request-refund")]
+	public async Task<IActionResult> RequestRefund([FromBody] RefundRequestDto refundRequestDto)
+	{
+		// Check if the order exists and belongs to the user
+		var order = await _context.Orders.FindAsync(refundRequestDto.OrderId);
+		if (order == null || order.UserId != refundRequestDto.UserId)
+		{
+			return BadRequest("Order not found or does not belong to the user.");
+		}
+
+		// Create a new return request
+		var returnRequest = new ReturnRequest
+		{
+			OrderId = refundRequestDto.OrderId,
+			Reason = refundRequestDto.Reason,
+			RequestStatus = "Pending",
+			RequestDate = DateTime.UtcNow
+		};
+
+		_context.ReturnRequests.Add(returnRequest);
+		await _context.SaveChangesAsync();
+
+		return Ok(new { Message = "Refund request submitted successfully." });
+	}
+
+
+
+
+	private bool ProcessPaymentThroughGateway(PaymentDto paymentDto)
+	{
+		// Simulate payment processing
+		// In a real application, you would integrate with a payment gateway here
+		return true; // Assume payment is always successful for demonstration purposes
+	}
+
 
 }

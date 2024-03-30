@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ecommerce_webapp_cs.Models.Entities;
 using Microsoft.OpenApi.Models;
 using OfficeOpenXml;
+using ecommerce_webapp_cs.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,7 +62,14 @@ builder.Services.AddSession(options =>
 	options.Cookie.IsEssential = true;
 });
 
+
+
 var app = builder.Build();
+app.UseEndpoints(endpoints =>
+{
+	endpoints.MapControllers();
+	endpoints.MapHub<ChatHub>("/chatHub");
+});
 
 if (app.Environment.IsDevelopment())
 {
