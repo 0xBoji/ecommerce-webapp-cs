@@ -336,14 +336,12 @@ public class productsController : ControllerBase
 						int categoryId;
 						if (!int.TryParse(worksheet.Cells[row, 5].Value?.ToString().Trim(), out categoryId))
 						{
-							// Log error or add to a list to inform the user that the CategoryId is invalid.
 							continue;
 						}
 
 						var category = await _context.ProductCategories.FindAsync(categoryId);
 						if (category == null)
 						{
-							// Handle invalid CategoryId
 							continue; // Skip this product
 						}
 

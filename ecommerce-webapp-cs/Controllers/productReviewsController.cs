@@ -1,11 +1,12 @@
-﻿/*using ecommerce_webapp_cs.Models.Entities;
+﻿using ecommerce_webapp_cs.Models.Entities;
+using ecommerce_webapp_cs.Models.ProductModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace ecommerce_webapp_cs.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [ApiController]
 public class ProductReviewsController : ControllerBase
 {
@@ -16,14 +17,39 @@ public class ProductReviewsController : ControllerBase
 		_context = context;
 	}
 
+	[HttpGet("{productId}")]
+	public async Task<IActionResult> GetAllReviewsByProductId(string productId)
+	{
+		var reviews = await _context.ProductReviews
+			.Where(review => review.ProductId == productId) 
+			.Select(review => new
+			{
+				review.ReviewId,
+				review.UserId,
+				review.Rating,
+				review.ReviewText,
+				review.ReviewDate,
+				review.IsApproved,
+				UserFirstName = review.User.Firstname, 
+				UserLastName = review.User.Lastname   
+			})
+			.ToListAsync();
+
+		if (reviews == null || reviews.Count == 0)
+		{
+			return NotFound($"No reviews found for product with ID {productId}.");
+		}
+
+		return Ok(reviews);
+	}
+
+
 	// POST: api/ProductReviews
-	// This endpoint receives the userId, productId, rating, and reviewText for a new review
 	[HttpPost]
 	public async Task<IActionResult> AddProductReview(int userId, string productId, int rating, string reviewText)
 	{
 		if (await CanUserReviewProduct(userId, productId))
 		{
-			// User has purchased the product and can leave a review
 			var review = new ProductReview
 			{
 				UserId = userId,
@@ -31,7 +57,7 @@ public class ProductReviewsController : ControllerBase
 				Rating = rating,
 				ReviewText = reviewText,
 				ReviewDate = DateTime.UtcNow,
-				IsApproved = false // Assuming reviews need approval
+				IsApproved = true
 			};
 
 			_context.ProductReviews.Add(review);
@@ -41,21 +67,28 @@ public class ProductReviewsController : ControllerBase
 		}
 		else
 		{
-			// User hasn't purchased the product and cannot leave a review
 			return BadRequest("You must purchase the product before reviewing it.");
 		}
 	}
 
-	// This helper method checks if a user can review a product based on their purchase history
 	private async Task<bool> CanUserReviewProduct(int userId, string productId)
 	{
-		// Check if the user has any order that includes the specified product
-		var userHasPurchasedProduct = await _context.Orders
-			.Include(o => o.OrderItems)
-			.AnyAsync(order => order.UserId == userId &&
-							   order.OrderItems.Any(item => item.ProductId == productId));
+		var userOrders = await _context.Orders
+			.Where(order => order.UserId == userId)
+			.SelectMany(order => order.OrderItems)
+			.Select(item => new OrderItemDtos
+			{
+				OrderItemId = item.OrderItemId,
+				OrderId = item.OrderId,
+				ProductId = item.ProId, 
+				Quantity = item.Quantity,
+				Price = item.Price
+			})
+			.ToListAsync();
+
+		var userHasPurchasedProduct = userOrders.Any(item => item.ProductId == productId);
 
 		return userHasPurchasedProduct;
 	}
+
 }
-*/

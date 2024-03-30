@@ -19,41 +19,62 @@ public class productOrder : ControllerBase
 	[HttpPost("cart")]
 	public async Task<IActionResult> AddOrUpdateCartItem([FromBody] CartItemDto cartItem)
 	{
-		var cartOrder = await _context.Orders
-			.FirstOrDefaultAsync(o => o.UserId == cartItem.UserId && o.Status == "InCart") ?? new Order
-			{
-				OrderId = GenerateOrderId(13),
-				UserId = cartItem.UserId,
-				OrderDate = DateTime.UtcNow,
-				Status = "InCart",
-				TotalPrice = 0
-			};
-
-		if (cartOrder.OrderId == null) _context.Orders.Add(cartOrder);
-
-		var orderItem = await _context.OrderItems
-			.FirstOrDefaultAsync(oi => oi.OrderId == cartOrder.OrderId && oi.ProId == cartItem.ProId);
-
-		if (orderItem == null)
+		using (var transaction = await _context.Database.BeginTransactionAsync())
 		{
-			orderItem = new OrderItem
+			try
 			{
-				OrderItemId = GenerateOrderId(8),
-				OrderId = cartOrder.OrderId,
-				ProId = cartItem.ProId,
-				Quantity = cartItem.Quantity,
-				Price = 0 
-			};
-			_context.OrderItems.Add(orderItem);
-		}
-		else
-		{
-			orderItem.Quantity += cartItem.Quantity;
-		}
+				var cartOrder = await _context.Orders
+					.FirstOrDefaultAsync(o => o.UserId == cartItem.UserId && o.Status == "InCart");
 
-		await _context.SaveChangesAsync();
-		return Ok(new { Message = "Item added/updated in cart" });
+				if (cartOrder == null)
+				{
+					cartOrder = new Order
+					{
+						OrderId = GenerateOrderId(13),
+						UserId = cartItem.UserId,
+						OrderDate = DateTime.UtcNow,
+						Status = "InCart", 
+						TotalPrice = 0
+					};
+					_context.Orders.Add(cartOrder);
+					await _context.SaveChangesAsync();
+				}
+
+
+				var orderItem = await _context.OrderItems
+					.FirstOrDefaultAsync(oi => oi.OrderId == cartOrder.OrderId && oi.ProId == cartItem.ProId);
+
+				if (orderItem == null)
+				{
+					orderItem = new OrderItem
+					{
+						OrderItemId = GenerateOrderId(8),
+						OrderId = cartOrder.OrderId,
+						ProId = cartItem.ProId,
+						Quantity = cartItem.Quantity,
+						Price = (await _context.Products.FirstOrDefaultAsync(p => p.ProId == cartItem.ProId))?.Price ?? 0
+					};
+					_context.OrderItems.Add(orderItem);
+				}
+				else
+				{
+					orderItem.Quantity += cartItem.Quantity;
+				}
+
+				await _context.SaveChangesAsync();
+				await transaction.CommitAsync();
+
+				return Ok(new { Message = "Item added/updated in cart" });
+			}
+			catch (Exception ex)
+			{
+				await transaction.RollbackAsync();
+				// Log the exception (ex) here
+				return StatusCode(500, "An error occurred while processing your request.");
+			}
+		}
 	}
+
 
 	// GET: api/Cart/{userId}
 	[HttpGet("{userId}")]
@@ -88,7 +109,7 @@ public class productOrder : ControllerBase
 
 		if (order == null) return BadRequest("No cart found for the user");
 
-		order.Status = "Placed";
+		order.Status = "Placed"; 
 		order.Note = orderDto.Note;
 		order.OrderDate = DateTime.UtcNow;
 		order.TotalPrice = order.OrderItems.Sum(oi => oi.Quantity * oi.Price);

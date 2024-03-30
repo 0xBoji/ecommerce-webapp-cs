@@ -16,7 +16,8 @@ public partial class Product
     public int StockQuantity { get; set; }
 
     public int CategoryId { get; set; }
-	public virtual ProductCategory Category { get; set; } = null!;
+
+    public virtual ProductCategory Category { get; set; } = null!;
 
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
