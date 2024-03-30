@@ -69,7 +69,6 @@ public class productOrder : ControllerBase
 			return Ok(cartOrder);
 		}
 
-		// Check if there are any other orders for the user
 		var hasOrders = await _context.Orders.AnyAsync(o => o.UserId == userId);
 		if (hasOrders)
 		{
@@ -83,7 +82,6 @@ public class productOrder : ControllerBase
 	[HttpPost("place")]
 	public async Task<IActionResult> PlaceOrder([FromBody] OrderCreationDto orderDto)
 	{
-		// Convert "InCart" order to a "Placed" order
 		var order = await _context.Orders
 			.Include(o => o.OrderItems)
 			.FirstOrDefaultAsync(o => o.UserId == orderDto.UserId && o.Status == "InCart");
@@ -100,7 +98,6 @@ public class productOrder : ControllerBase
 		return Ok(order);
 	}
 
-	// Helper method to generate Order IDs
 	private string GenerateOrderId(int maxLength)
 	{
 		var random = new Random();

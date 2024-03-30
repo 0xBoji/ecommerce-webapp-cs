@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using ecommerce_webapp_cs.Models.Entities;
 using Microsoft.OpenApi.Models;
+using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,7 @@ builder.Services.AddCors(options =>
 //connectionstring here
 builder.Services.AddDbContext<ArtsContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

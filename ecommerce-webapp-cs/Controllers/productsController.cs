@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerce_webapp_cs.Models.ProductModels;
 using System.Data.SqlClient;
+using OfficeOpenXml;
+
 
 namespace ecommerce_webapp_cs.Controllers;
 
@@ -157,11 +159,16 @@ public class productsController : ControllerBase
 
 	private string GenerateRandomString(int length)
 	{
+		// Ensure length is not greater than the size of the ProID column in the database.
+		const int maxProIdLength = 6;
+		length = Math.Min(length, maxProIdLength);
+
 		const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		var random = new Random();
 		return new string(Enumerable.Repeat(chars, length)
-		  .Select(s => s[random.Next(s.Length)]).ToArray());
+			.Select(s => s[random.Next(s.Length)]).ToArray());
 	}
+
 	// GET: api/v1/Products/Categories
 	[HttpGet("categories")]
 	public async Task<IActionResult> GetCategories()
@@ -255,7 +262,7 @@ public class productsController : ControllerBase
 	}
 
 	// DELETE: api/v1/Products/Categories/5
-	[HttpDelete("Categories/{id}")]
+	[HttpDelete("categories/{id}")]
 	public async Task<IActionResult> DeleteCategory(int id)
 	{
 		var category = await _context.ProductCategories.FindAsync(id);
@@ -293,6 +300,120 @@ public class productsController : ControllerBase
 		{
 			return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Details: " + ex.Message);
 		}
+	}
+
+
+	[HttpPost("upload")]
+	public async Task<IActionResult> UploadExcel(IFormFile file)
+	{
+		ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+		if (file == null || file.Length <= 0)
+		{
+			return BadRequest("Upload a valid Excel file.");
+		}
+
+		if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+		{
+			return BadRequest("File format not supported.");
+		}
+
+		var productList = new List<Product>();
+
+		try
+		{
+			using (var stream = new MemoryStream())
+			{
+				await file.CopyToAsync(stream);
+
+				using (var package = new ExcelPackage(stream))
+				{
+					ExcelWorksheet worksheet = package.Workbook.Worksheets.First();
+					int rowCount = worksheet.Dimension.Rows;
+
+					for (int row = 2; row <= rowCount; row++)
+					{
+						int categoryId;
+						if (!int.TryParse(worksheet.Cells[row, 5].Value?.ToString().Trim(), out categoryId))
+						{
+							// Log error or add to a list to inform the user that the CategoryId is invalid.
+							continue;
+						}
+
+						var category = await _context.ProductCategories.FindAsync(categoryId);
+						if (category == null)
+						{
+							// Handle invalid CategoryId
+							continue; // Skip this product
+						}
+
+						var product = new Product
+						{
+							ProId = GenerateRandomString(6), // Assuming a method exists to generate a unique ProId
+							ProName = worksheet.Cells[row, 1].Value?.ToString().Trim(),
+							Description = worksheet.Cells[row, 2].Value?.ToString().Trim(),
+							Price = decimal.Parse(worksheet.Cells[row, 3].Value?.ToString().Trim()),
+							StockQuantity = int.Parse(worksheet.Cells[row, 4].Value?.ToString().Trim()),
+							CategoryId = categoryId
+						};
+
+						productList.Add(product);
+					}
+
+					if (productList.Any())
+					{
+						_context.Products.AddRange(productList);
+						await _context.SaveChangesAsync();
+					}
+					else
+					{
+						return BadRequest("No valid products found in the uploaded file.");
+					}
+				}
+			}
+
+			return Ok($"{productList.Count} products imported successfully.");
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(500, $"Internal server error: {ex.Message}");
+		}
+	}
+
+
+
+	[HttpGet("export")]
+	public async Task<IActionResult> ExportProductsToExcel()
+	{
+		// Set LicenseContext for EPPlus
+		ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+		var products = await _context.Products.Include(p => p.Category).ToListAsync();
+
+		var stream = new MemoryStream();
+		using (var package = new ExcelPackage(stream))
+		{
+			var workSheet = package.Workbook.Worksheets.Add("Products");
+			workSheet.Cells.LoadFromCollection(products.Select(p => new
+			{
+				p.ProName,
+				p.Description,
+				p.Price,
+				p.StockQuantity,
+				CategoryName = p.Category?.CategoryName // Assuming there is a navigation property to Category
+			}), true, OfficeOpenXml.Table.TableStyles.Light1);
+
+			// Auto-fit columns for all cells
+			workSheet.Cells[workSheet.Dimension.Address].AutoFitColumns();
+
+			package.Save();
+		}
+
+		stream.Position = 0;
+		string excelName = $"Products-{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.xlsx";
+
+		// Return the Excel file as a download
+		return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
 	}
 
 
