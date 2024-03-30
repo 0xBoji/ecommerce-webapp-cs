@@ -14,7 +14,7 @@ This file contains the list of everyone who contributed to the repository :troph
       <a href="https://github.com/pichtranst123">pich2004</a> :octocat:
     </td>
     <td>
-      <a href="https://github.com/pichtranst123/ngo-webapp-dotnetcore/commits?author=pichtranst123">Contributions</a> by pich2004 :memo:
+      <a href="https://github.com/pichtranst123/ecommerce-webapp-cs/commits?author=pichtranst123">Contributions</a> by pich2004 :memo:
     </td>
   </tr>
 </table>
