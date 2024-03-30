@@ -1,3 +1,5 @@
 # ecommerce-webapp-cs
-
-![api screen shot](./myapi.png)
+# API Screenshot 01
+![api screen shot](./api_screenshot1.png)
+# API Screenshot 02
+![api screen shot](./api_screenshot2.png)
