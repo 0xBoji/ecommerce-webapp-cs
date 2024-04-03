@@ -70,7 +70,7 @@ public class productOrder : ControllerBase
 			catch (Exception ex)
 			{
 				await transaction.RollbackAsync();
-				// Log the exception (ex) here
+				// log the exception
 				return StatusCode(500, "An error occurred while processing your request.");
 			}
 		}
@@ -100,7 +100,7 @@ public class productOrder : ControllerBase
 		return NotFound("The user has no active cart or orders.");
 	}
 
-	// Convert cart to an order
+	// convert cart to an order
 	[HttpPost("place")]
 	public async Task<IActionResult> PlaceOrder([FromBody] OrderCreationDto orderDto)
 	{
@@ -121,8 +121,8 @@ public class productOrder : ControllerBase
 				return BadRequest("Invalid or expired voucher code.");
 			}
 
-			order.TotalPrice -= voucher.Amount; // Adjust total price based on the voucher
-			order.VoucherId = voucher.VoucherId; // Associate voucher with the order
+			order.TotalPrice -= voucher.Amount; // adjust total price based on the voucher
+			order.VoucherId = voucher.VoucherId; // associate voucher with the order
 		}
 
 		order.Status = "Placed";
@@ -151,7 +151,7 @@ public class productOrder : ControllerBase
 	[HttpPost("processPayment")]
 	public async Task<IActionResult> ProcessPayment([FromBody] PaymentDto paymentDto)
 	{
-		// Fetch the order
+		// fetch the order
 		var order = await _context.Orders
 								  .FirstOrDefaultAsync(o => o.OrderId == paymentDto.OrderId && o.UserId == paymentDto.UserId);
 
@@ -160,8 +160,8 @@ public class productOrder : ControllerBase
 			return BadRequest("Order not found.");
 		}
 
-		// Process the payment through the payment gateway
-		// This is a simplified example; in a real application, you would call the payment gateway's API here
+		// process the payment through the payment gateway
+		// this is a simplified example; in a real application, you would call the payment gateway's API here
 		var paymentProcessed = ProcessPaymentThroughGateway(paymentDto);
 
 		if (!paymentProcessed)
@@ -169,7 +169,7 @@ public class productOrder : ControllerBase
 			return BadRequest("Payment failed.");
 		}
 
-		// Update the order status to "Paid" or similar
+		// update the order status to "Paid" or similar
 		order.Status = "Paid";
 		await _context.SaveChangesAsync();
 
@@ -190,14 +190,14 @@ public class productOrder : ControllerBase
 	[HttpPost("request-refund")]
 	public async Task<IActionResult> RequestRefund([FromBody] RefundRequestDto refundRequestDto)
 	{
-		// Check if the order exists and belongs to the user
+		// check if the order exists and belongs to the user
 		var order = await _context.Orders.FindAsync(refundRequestDto.OrderId);
 		if (order == null || order.UserId != refundRequestDto.UserId)
 		{
 			return BadRequest("Order not found or does not belong to the user.");
 		}
 
-		// Create a new return request
+		// create a new return request
 		var returnRequest = new ReturnRequest
 		{
 			OrderId = refundRequestDto.OrderId,
@@ -217,8 +217,8 @@ public class productOrder : ControllerBase
 
 	private bool ProcessPaymentThroughGateway(PaymentDto paymentDto)
 	{
-		// Simulate payment processing
-		// In a real application, you would integrate with a payment gateway here
+		// simulate payment processing
+		// in a real application, you would integrate with a payment gateway here
 		return true; // Assume payment is always successful for demonstration purposes
 	}
 

@@ -342,12 +342,12 @@ public class productsController : ControllerBase
 						var category = await _context.ProductCategories.FindAsync(categoryId);
 						if (category == null)
 						{
-							continue; // Skip this product
+							continue; // skip this product
 						}
 
 						var product = new Product
 						{
-							ProId = GenerateRandomString(6), // Assuming a method exists to generate a unique ProId
+							ProId = GenerateRandomString(6), // assuming a method exists to generate a unique ProId
 							ProName = worksheet.Cells[row, 1].Value?.ToString().Trim(),
 							Description = worksheet.Cells[row, 2].Value?.ToString().Trim(),
 							Price = decimal.Parse(worksheet.Cells[row, 3].Value?.ToString().Trim()),
@@ -398,10 +398,10 @@ public class productsController : ControllerBase
 				p.Description,
 				p.Price,
 				p.StockQuantity,
-				CategoryName = p.Category?.CategoryName // Assuming there is a navigation property to Category
+				CategoryName = p.Category?.CategoryName // assuming there is a navigation property to Category
 			}), true, OfficeOpenXml.Table.TableStyles.Light1);
 
-			// Auto-fit columns for all cells
+			// auto-fit columns for all cells
 			workSheet.Cells[workSheet.Dimension.Address].AutoFitColumns();
 
 			package.Save();
@@ -410,7 +410,7 @@ public class productsController : ControllerBase
 		stream.Position = 0;
 		string excelName = $"Products-{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.xlsx";
 
-		// Return the Excel file as a download
+		// return the Excel file as a download
 		return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
 	}
 

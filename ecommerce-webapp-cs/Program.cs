@@ -65,11 +65,11 @@ builder.Services.AddSession(options =>
 
 
 var app = builder.Build();
-app.UseEndpoints(endpoints =>
+/*app.UseEndpoints(endpoints =>
 {
 	endpoints.MapControllers();
 	endpoints.MapHub<ChatHub>("/chatHub");
-});
+});*/
 
 if (app.Environment.IsDevelopment())
 {

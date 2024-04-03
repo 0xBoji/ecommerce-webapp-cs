@@ -17,7 +17,7 @@ public class auditLogController : ControllerBase
 		_context = context;
 	}
 
-	// GET: api/v1/AuditLog
+	// GET: api/auditlog
 	[HttpGet]
 	public async Task<IActionResult> GetAuditLogs()
 	{
@@ -28,7 +28,7 @@ public class auditLogController : ControllerBase
 		return Ok(logs);
 	}
 
-	// GET: api/v1/AuditLog/5
+	// GET: api/auditlog/5
 	[HttpGet("{id}")]
 	public async Task<IActionResult> GetAuditLog(int id)
 	{

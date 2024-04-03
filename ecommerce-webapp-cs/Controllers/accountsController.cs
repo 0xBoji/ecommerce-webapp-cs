@@ -48,7 +48,6 @@ public class accountsController : ControllerBase
 			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
 
-			// Consider returning a created status code or a user DTO (without sensitive info)
 			return CreatedAtAction(nameof(Profile), new { userId = user.UserId }, user);
 		}
 
@@ -109,7 +108,7 @@ public class accountsController : ControllerBase
 	[HttpPost("logout")]
 	public IActionResult Logout()
 	{
-		HttpContext.Session.Clear(); // Clears all data stored in session, effectively "logging out" the user.
+		HttpContext.Session.Clear(); // clears all data stored in session
 		return Ok(new { message = "You have been logged out successfully" });
 	}
 
@@ -155,9 +154,6 @@ public class accountsController : ControllerBase
 		}
 
 
-
-
-
 		[HttpGet("profile/edit")]
 		public async Task<IActionResult> GetProfileForEdit()
 		{
@@ -184,7 +180,5 @@ public class accountsController : ControllerBase
 
 			return Ok(profileModel);
 		}
-
-
 
 	}
