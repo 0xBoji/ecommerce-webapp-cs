@@ -10,10 +10,10 @@ public class ChatHub : Hub
 {
 	public async Task SendMessageToGroup(string groupName, string message)
 	{
-		var userName = Context.User.Identity.Name; // Get the user name from the context
+		var userName = Context.User.Identity.Name; // get the user name from the context
 		await Clients.Group(groupName).SendAsync("ReceiveMessage", userName, message);
 	}
-
+	//role "customer", "employee"
 	public async Task JoinRoleGroup()
 	{
 		var userRole = Context.User.FindFirst(ClaimTypes.Role)?.Value;
@@ -27,7 +27,6 @@ public class ChatHub : Hub
 			await Groups.AddToGroupAsync(Context.ConnectionId, "Employees");
 		}
 	}
-
 	public async Task LeaveRoleGroup()
 	{
 		var userRole = Context.User.FindFirst(ClaimTypes.Role)?.Value;
@@ -47,7 +46,7 @@ public class ChatHub : Hub
 		await JoinRoleGroup();
 		await base.OnConnectedAsync();
 	}
-
+		//leave
 	public override async Task OnDisconnectedAsync(Exception? exception)
 	{
 		await LeaveRoleGroup();
