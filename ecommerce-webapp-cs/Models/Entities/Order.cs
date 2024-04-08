@@ -30,6 +30,4 @@ public partial class Order
     public virtual ICollection<ReturnRequest> ReturnRequests { get; set; } = new List<ReturnRequest>();
 
     public virtual User User { get; set; } = null!;
-
-    public virtual Voucher? Voucher { get; set; }
 }

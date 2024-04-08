@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ecommerce_webapp_cs.Models.AccountModels;
+using System.Security.Claims;
 
 namespace ecommerce_webapp_cs.Controllers;
 [Route("api/v1/[controller]")]
@@ -67,8 +68,10 @@ public class accountsController : ControllerBase
 		
 				HttpContext.Session.SetString("UserID", user.UserId.ToString());
 				HttpContext.Session.SetString("Username", user.Username);
+                HttpContext.Session.SetString("Useremail", user.Email);
 
-				return Ok(new { message = "Login successful" });
+
+                return Ok(new { message = "Login successful" });
 			}
 
 			return Unauthorized(new { message = "Invalid login attempt" });
@@ -77,35 +80,53 @@ public class accountsController : ControllerBase
 		return BadRequest(ModelState);
 	}
 
-	// Profile endpoint
-	[HttpGet("profile")]
-	public async Task<IActionResult> Profile()
-	{
-		var userIdString = HttpContext.Session.GetString("UserID");
-		if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-		{
-			return Unauthorized(new { message = "User is not authenticated" });
-		}
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        User user = null;
 
-		var user = await _context.Users.FindAsync(userId);
-		if (user == null)
-		{
-			return NotFound(new { message = "User not found" });
-		}
+        var userIdString = HttpContext.Session.GetString("UserID");
+        if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId))
+        {
+            user = await _context.Users.FindAsync(userId);
+        }
+        else if (User.Identity.IsAuthenticated)
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (!string.IsNullOrEmpty(email))
+            {
+                user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            }
+        }
 
-		var model = new ProfileModel
-		{
-			Username = user.Username,
-			FirstName = user.Firstname,
-			LastName = user.Lastname,
-			PhoneNum = user.PhoneNum,
-			UserImg = user.UserImg,
-		};
+        if (user == null)
+        {
+            return Unauthorized(new { message = "User is not authenticated" });
+        }
 
-		return Ok(model);
-	}
+        var model = new ProfileModel
+        {
+            Username = user.Username,
+            PhoneNum = user.PhoneNum,
+            UserImg = user.UserImg,
+        };
 
-	[HttpPost("logout")]
+        return Ok(model);
+    }
+
+
+    private ProfileModel MapToProfileModel(User user)
+    {
+        return new ProfileModel
+        {
+            Username = user.Username,
+            PhoneNum = user.PhoneNum,
+            UserImg = user.UserImg,
+        };
+    }
+
+
+    [HttpPost("logout")]
 	public IActionResult Logout()
 	{
 		HttpContext.Session.Clear(); // clears all data stored in session
@@ -116,7 +137,7 @@ public class accountsController : ControllerBase
 
 
 	[HttpPut("profile/edit")]
-		public async Task<IActionResult> EditProfile([FromBody] ProfileModel model)
+		public async Task<IActionResult> EditProfile([FromBody] ProfileEditModel model)
 		{
 			var userIdString = HttpContext.Session.GetString("UserID");
 			if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
@@ -169,8 +190,8 @@ public class accountsController : ControllerBase
 				return NotFound(new { message = "User not found" });
 			}
 
-			var profileModel = new ProfileModel
-			{
+			var profileModel = new ProfileEditModel
+            {
 				Username = user.Username,
 				FirstName = user.Firstname,
 				LastName = user.Lastname,

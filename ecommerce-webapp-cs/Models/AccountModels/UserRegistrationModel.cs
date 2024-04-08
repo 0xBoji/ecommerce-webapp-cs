@@ -8,12 +8,13 @@ public class UserRegistrationModel
 	public string Email { get; set; }
 
 	[Required, Display(Name = "Username")]
-	public string Username { get; set; } // Added Username
+	public string Username { get; set; }
 
 	[Display(Name = "Phone Number")]
-	public string PhoneNum { get; set; } // Added PhoneNum
+	public string PhoneNum { get; set; }
 
-	[Required, DataType(DataType.Password), Display(Name = "Password")]
+
+    [Required, DataType(DataType.Password), Display(Name = "Password")]
 	public string Password { get; set; }
 
 	[DataType(DataType.Password), Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
