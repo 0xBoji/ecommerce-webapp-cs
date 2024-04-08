@@ -15,11 +15,11 @@ namespace ecommerce_webapp_cs.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class productsController : ControllerBase
     {
         private readonly ArtsContext _context;
 
-        public ProductsController(ArtsContext context)
+        public productsController(ArtsContext context)
         {
             _context = context;
         }
@@ -176,4 +176,3 @@ namespace ecommerce_webapp_cs.Controllers
     }
 }
 
-// Note: Ensure you have the corresponding ProductModel and ProductEditModel defined in your Models.

@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ecommerce_webapp_cs.Models.AccountModels;
 using System.Security.Claims;
+using System.Diagnostics.Metrics;
 
 namespace ecommerce_webapp_cs.Controllers;
 [Route("api/v1/[controller]")]
@@ -104,24 +105,41 @@ public class accountsController : ControllerBase
             return Unauthorized(new { message = "User is not authenticated" });
         }
 
-        var model = new ProfileModel
+        var model = new ProfileEditModel
         {
             Username = user.Username,
+            FirstName = user.Firstname,
+            LastName = user.Lastname,
             PhoneNum = user.PhoneNum,
             UserImg = user.UserImg,
+			CompanyName = user.CompanyName,
+			AddressLine1 = user.AddressLine1,
+            Country = user.Country,
+            Province = user.Province,
+            City = user.City,
+            PostalCode = user.PostalCode
+
         };
 
         return Ok(model);
     }
 
 
-    private ProfileModel MapToProfileModel(User user)
+    private ProfileEditModel MapToProfileModel(User user)
     {
-        return new ProfileModel
+        return new ProfileEditModel
         {
             Username = user.Username,
+            FirstName = user.Firstname,
+            LastName = user.Lastname,
             PhoneNum = user.PhoneNum,
             UserImg = user.UserImg,
+            CompanyName = user.CompanyName,
+            AddressLine1 = user.AddressLine1,
+            Country = user.Country,
+            Province = user.Province,
+            City = user.City,
+            PostalCode = user.PostalCode
         };
     }
 
@@ -165,8 +183,15 @@ public class accountsController : ControllerBase
 				user.Lastname = model.LastName;
 				user.PhoneNum = model.PhoneNum;
 				user.UserImg = model.UserImg;
+				user.CompanyName = model.CompanyName;
+				user.AddressLine1 = model.AddressLine1;
+				user.Country = model.Country;
+				user.Province = model.Province;
+				user.City = model.City;
+				user.PostalCode = model.PostalCode;
 
-				await _context.SaveChangesAsync();
+
+                await _context.SaveChangesAsync();
 
 				return Ok(new { message = "Profile updated successfully" });
 			}
@@ -197,7 +222,13 @@ public class accountsController : ControllerBase
 				LastName = user.Lastname,
 				PhoneNum = user.PhoneNum,
 				UserImg = user.UserImg,
-			};
+                CompanyName = user.CompanyName,
+                AddressLine1 = user.AddressLine1,
+                Country = user.Country,
+                Province = user.Province,
+                City = user.City,
+                PostalCode = user.PostalCode
+            };
 
 			return Ok(profileModel);
 		}
