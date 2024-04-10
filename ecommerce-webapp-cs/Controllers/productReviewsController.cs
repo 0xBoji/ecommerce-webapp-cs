@@ -8,11 +8,11 @@ namespace ecommerce_webapp_cs.Controllers;
 
 [Route("api/v1/[controller]")]
 [ApiController]
-public class productreviewsController : ControllerBase
+public class productReviewsController : ControllerBase
 {
 	private readonly ArtsContext _context;
 
-	public productreviewsController(ArtsContext context)
+	public productReviewsController(ArtsContext context)
 	{
 		_context = context;
 	}

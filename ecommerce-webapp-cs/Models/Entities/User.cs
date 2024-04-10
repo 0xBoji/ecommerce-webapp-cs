@@ -29,13 +29,31 @@ public partial class User
 
     public string? UserImg { get; set; }
 
-    public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
+    public string? CompanyName { get; set; }
+
+    public string? AddressLine1 { get; set; }
+
+    public string? AddressLine2 { get; set; }
+
+    public string? Country { get; set; }
+
+    public string? Province { get; set; }
+
+    public string? City { get; set; }
+
+    public string? PostalCode { get; set; }
 
     public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
+
+    public virtual ICollection<BlogComment> BlogComments { get; set; } = new List<BlogComment>();
+
+    public virtual ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
 
     public virtual ICollection<ChatMessage> ChatMessageFromUsers { get; set; } = new List<ChatMessage>();
 
     public virtual ICollection<ChatMessage> ChatMessageToUsers { get; set; } = new List<ChatMessage>();
+
+    public virtual ICollection<Negotiation> Negotiations { get; set; } = new List<Negotiation>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

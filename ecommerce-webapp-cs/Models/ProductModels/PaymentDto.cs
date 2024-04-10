@@ -4,4 +4,6 @@ public class PaymentDto
 {
 	public int UserId { get; set; }
 	public string OrderId { get; set; }
+    public string PaymentType { get; set; }
+
 }

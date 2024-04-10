@@ -12,6 +12,6 @@ public class ErrorController : ControllerBase
 	public IActionResult HandleError()
 	{
 		var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();
-		return Problem(detail: "Something wrong! If you delete category that has a discount, Please re-check!");
+		return Problem(detail: "500, please re-check your api method!");
 	}
 }

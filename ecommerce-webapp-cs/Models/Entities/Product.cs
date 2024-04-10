@@ -11,13 +11,17 @@ public partial class Product
 
     public string Description { get; set; } = null!;
 
+    public string? ProImg1 { get; set; }
+
+    public string? ProImg2 { get; set; }
+
+    public string? ProImg3 { get; set; }
+
     public decimal Price { get; set; }
 
     public int StockQuantity { get; set; }
 
-    public int CategoryId { get; set; }
-
-    public virtual ProductCategory Category { get; set; } = null!;
+    public virtual ICollection<Negotiation> Negotiations { get; set; } = new List<Negotiation>();
 
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
