@@ -44,34 +44,47 @@ public class productReviewsController : ControllerBase
 	}
 
 
-	// POST: api/ProductReviews
-	[HttpPost]
-	public async Task<IActionResult> AddProductReview(int userId, string productId, int rating, string reviewText)
-	{
-		if (await CanUserReviewProduct(userId, productId))
-		{
-			var review = new ProductReview
-			{
-				UserId = userId,
-				ProductId = productId,
-				Rating = rating,
-				ReviewText = reviewText,
-				ReviewDate = DateTime.UtcNow,
-				IsApproved = true
-			};
+    // POST: api/ProductReviews
+    [HttpPost]
+    public async Task<IActionResult> AddProductReview([FromForm] ReviewCreateDto reviewDto)
+    {
+        var userIdString = HttpContext.Session.GetString("UserID");
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized(new { message = "User is not authenticated" });
+        }
 
-			_context.ProductReviews.Add(review);
-			await _context.SaveChangesAsync();
+        // Ensure the rating is between 1 and 5
+        if (reviewDto.Rating < 1 || reviewDto.Rating > 5)
+        {
+            return BadRequest("Rating must be between 1 and 5 stars.");
+        }
 
-			return Ok("Review added successfully.");
-		}
-		else
-		{
-			return BadRequest("You must purchase the product before reviewing it.");
-		}
-	}
+        if (await CanUserReviewProduct(userId, reviewDto.ProductId))
+        {
+            var review = new ProductReview
+            {
+                UserId = userId,
+                ProductId = reviewDto.ProductId,
+                Rating = reviewDto.Rating,
+                ReviewText = reviewDto.ReviewText,
+                ReviewDate = DateTime.UtcNow,
+                IsApproved = true
+            };
 
-	private async Task<bool> CanUserReviewProduct(int userId, string productId)
+            _context.ProductReviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            return Ok("Review added successfully.");
+        }
+        else
+        {
+            return BadRequest("You must purchase the product before reviewing it.");
+        }
+    }
+
+
+    private async Task<bool> CanUserReviewProduct(int userId, string productId)
 	{
 		var userOrders = await _context.Orders
 			.Where(order => order.UserId == userId)

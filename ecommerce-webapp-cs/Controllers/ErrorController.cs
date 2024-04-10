@@ -9,6 +9,8 @@ public class ErrorController : ControllerBase
 	[Route("/error")]
 
 	[ApiExplorerSettings(IgnoreApi = true)]
+
+	//helper
 	public IActionResult HandleError()
 	{
 		var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();

@@ -24,19 +24,25 @@ namespace ecommerce_webapp_cs.Controllers
         [HttpPost("cart")]
         public async Task<IActionResult> AddOrUpdateCartItem([FromBody] CartItemDto cartItem)
         {
+            var userIdString = HttpContext.Session.GetString("UserID");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "User is not authenticated" });
+            }
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
                     var cartOrder = await _context.Orders
-                        .FirstOrDefaultAsync(o => o.UserId == cartItem.UserId && o.Status == "InCart");
+                        .FirstOrDefaultAsync(o => o.UserId == userId && o.Status == "InCart");
 
                     if (cartOrder == null)
                     {
                         cartOrder = new Order
                         {
                             OrderId = GenerateOrderId(13),
-                            UserId = cartItem.UserId,
+                            UserId = userId,
                             OrderDate = DateTime.UtcNow,
                             Status = "InCart",
                             TotalPrice = 0
@@ -78,13 +84,20 @@ namespace ecommerce_webapp_cs.Controllers
             }
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> ViewCart(int userId)
+
+        [HttpGet("cart")]
+        public async Task<IActionResult> ViewCart()
         {
+            var userIdString = HttpContext.Session.GetString("UserID");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "User is not authenticated" });
+            }
+
             var cartOrder = await _context.Orders
-                               .Include(o => o.OrderItems)
-                               .ThenInclude(oi => oi.Pro)
-                               .FirstOrDefaultAsync(o => o.UserId == userId && o.Status == "InCart");
+                           .Include(o => o.OrderItems)
+                           .ThenInclude(oi => oi.Pro)
+                           .FirstOrDefaultAsync(o => o.UserId == userId && o.Status == "InCart");
 
             if (cartOrder != null)
             {
@@ -94,12 +107,19 @@ namespace ecommerce_webapp_cs.Controllers
             return NotFound("The user has no active cart.");
         }
 
+
         [HttpPost("place")]
         public async Task<IActionResult> PlaceOrder([FromBody] OrderCreationDto orderDto)
         {
+            var userIdString = HttpContext.Session.GetString("UserID");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "User is not authenticated" });
+            }
+
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
-                .FirstOrDefaultAsync(o => o.UserId == orderDto.UserId && o.Status == "InCart");
+                .FirstOrDefaultAsync(o => o.UserId == userId && o.Status == "InCart");
 
             if (order == null) return BadRequest("No cart found for the user.");
 
@@ -111,6 +131,7 @@ namespace ecommerce_webapp_cs.Controllers
 
             return Ok(order);
         }
+
 
         private string GenerateOrderId(int maxLength)
         {
@@ -187,32 +208,27 @@ namespace ecommerce_webapp_cs.Controllers
 
         private bool ProcessPaymentThroughGateway(PaymentDto paymentDto)
         {
-            return true; // Assume payment is always successful for demonstration purposes
-        }
-
-        [HttpGet("getnegotiation/{negotiationId}")]
-        public async Task<IActionResult> GetNegotiation(int negotiationId)
-        {
-            var negotiation = await _context.Negotiations.FindAsync(negotiationId);
-            if (negotiation == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(negotiation);
+            return true;
         }
 
         [HttpPost("negotiate")]
         public async Task<IActionResult> NegotiatePrice([FromBody] NegotiationDto negotiationDto)
         {
+            var acceptedNegotiation = await _context.Negotiations
+                .FirstOrDefaultAsync(n => n.ProId == negotiationDto.ProId && n.UserId == negotiationDto.UserId && n.Status == "Accepted");
+
+            if (acceptedNegotiation != null)
+            {
+                return BadRequest("Negotiation for this product has already been accepted and cannot be modified.");
+            }
+
             var existingNegotiation = await _context.Negotiations
                 .FirstOrDefaultAsync(n => n.ProId == negotiationDto.ProId && n.UserId == negotiationDto.UserId);
 
             if (existingNegotiation != null)
             {
-                // Update the existing negotiation if one already exists for this user and product
                 existingNegotiation.NegotiatedPrice = negotiationDto.NegotiatedPrice;
-                existingNegotiation.Status = "Pending"; // Reset status to pending for re-negotiation
+                existingNegotiation.Status = "Pending";
                 _context.Negotiations.Update(existingNegotiation);
             }
             else
@@ -230,6 +246,35 @@ namespace ecommerce_webapp_cs.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Message = "Negotiation submitted successfully." });
         }
+
+
+        [HttpGet("getnegotiation/{negotiationId}")]
+        public async Task<IActionResult> GetNegotiation(int negotiationId)
+        {
+            var negotiation = await _context.Negotiations.FindAsync(negotiationId);
+            if (negotiation == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(negotiation);
+        }
+
+        [HttpGet("user-negotiations/{userId}")]
+        public async Task<IActionResult> GetNegotiationsByUserId(int userId)
+        {
+            var userNegotiations = await _context.Negotiations
+                .Where(n => n.UserId == userId)
+                .ToListAsync();
+
+            if (!userNegotiations.Any())
+            {
+                return NotFound($"No negotiations found for user with ID {userId}.");
+            }
+
+            return Ok(userNegotiations);
+        }
+
 
         [HttpPost("accept-negotiation/{negotiationId}")]
         public async Task<IActionResult> AcceptNegotiation(int negotiationId)
@@ -249,5 +294,48 @@ namespace ecommerce_webapp_cs.Controllers
             // Optionally, you might want to update the related product's price or order item's price here
             return Ok(new { Message = $"Negotiation {negotiationId} accepted." });
         }
+        [HttpGet("all-negotiations")]
+        public async Task<IActionResult> GetAllNegotiations()
+        {
+            var negotiations = await _context.Negotiations.ToListAsync();
+
+            if (negotiations == null || !negotiations.Any())
+            {
+                return NotFound("No negotiations found.");
+            }
+
+            return Ok(negotiations);
+        }
+
+        [HttpGet("negotiations/accepted")]
+        public async Task<IActionResult> GetAllAcceptedNegotiations()
+        {
+            var acceptedNegotiations = await _context.Negotiations
+                .Where(n => n.Status == "Accepted")
+                .ToListAsync();
+
+            if (!acceptedNegotiations.Any())
+            {
+                return NotFound("No accepted negotiations found.");
+            }
+
+            return Ok(acceptedNegotiations);
+        }
+
+        [HttpGet("negotiations/pending")]
+        public async Task<IActionResult> GetAllPendingNegotiations()
+        {
+            var pendingNegotiations = await _context.Negotiations
+                .Where(n => n.Status == "Pending")
+                .ToListAsync();
+
+            if (!pendingNegotiations.Any())
+            {
+                return NotFound("No pending negotiations found.");
+            }
+
+            return Ok(pendingNegotiations);
+        }
+
     }
 }

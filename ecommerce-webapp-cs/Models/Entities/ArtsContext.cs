@@ -293,6 +293,7 @@ public partial class ArtsContext : DbContext
             entity.Property(e => e.ProId)
                 .HasMaxLength(7)
                 .HasColumnName("ProID");
+            entity.Property(e => e.CreationDate).HasColumnType("datetime");
             entity.Property(e => e.Description).IsUnicode(false);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProImg1)
@@ -411,6 +412,9 @@ public partial class ArtsContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.EmailVerificationToken)
                 .HasMaxLength(255)
                 .IsUnicode(false);
             entity.Property(e => e.Firstname)

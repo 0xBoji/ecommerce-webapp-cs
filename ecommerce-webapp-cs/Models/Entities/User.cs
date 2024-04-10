@@ -43,6 +43,10 @@ public partial class User
 
     public string? PostalCode { get; set; }
 
+    public bool EmailVerified { get; set; }
+
+    public string? EmailVerificationToken { get; set; }
+
     public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 
     public virtual ICollection<BlogComment> BlogComments { get; set; } = new List<BlogComment>();

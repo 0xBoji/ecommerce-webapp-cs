@@ -66,6 +66,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<ArtsContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+builder.Services.AddScoped<PinataService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
