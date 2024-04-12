@@ -23,6 +23,7 @@ public class accountsController : ControllerBase
 		_context = context;
 	}
 
+
 	// SignUp endpoint
 	[HttpPost("signup")]
 	public async Task<IActionResult> SignUp([FromBody] UserRegistrationModel model)
@@ -120,6 +121,36 @@ public class accountsController : ControllerBase
 
 		return BadRequest(ModelState);
 	}
+
+    [HttpPost("login-admin")]
+    public async Task<IActionResult> LoginAdmin([FromBody] LoginModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+
+            if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            {
+                if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase) || user.Role.Equals("Employee", StringComparison.OrdinalIgnoreCase))
+                {
+                    HttpContext.Session.SetString("UserID", user.UserId.ToString());
+                    HttpContext.Session.SetString("Username", user.Username);
+                    HttpContext.Session.SetString("UserEmail", user.Email);
+                    HttpContext.Session.SetString("UserRole", user.Role);
+
+                    return Ok(new { message = "Login successful" });
+                }
+                else
+                {
+                    return Unauthorized(new { message = "Access denied. User does not have the required role." });
+                }
+            }
+
+            return Unauthorized(new { message = "Invalid login attempt" });
+        }
+
+        return BadRequest(ModelState);
+    }
 
     [HttpGet("profile")]
     public async Task<IActionResult> Profile()
@@ -332,5 +363,14 @@ public class accountsController : ControllerBase
 
 			return Ok(profileModel);
 		}
-
-	}
+        [HttpGet("session/userId")]
+        public IActionResult GetUserIdFromSession()
+        {
+            var userId = HttpContext.Session.GetString("UserID");
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+            return Ok(new { UserId = userId });
+        }
+}

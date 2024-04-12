@@ -214,8 +214,16 @@ namespace ecommerce_webapp_cs.Controllers
         [HttpPost("negotiate")]
         public async Task<IActionResult> NegotiatePrice([FromBody] NegotiationDto negotiationDto)
         {
+            // Retrieve UserId from the session
+            var userIdString = HttpContext.Session.GetString("UserID");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int UserId))
+            {
+                return Unauthorized(new { message = "User is not authenticated" });
+            }
+
+            // Use UserId from the session instead of the request body for further operations
             var acceptedNegotiation = await _context.Negotiations
-                .FirstOrDefaultAsync(n => n.ProId == negotiationDto.ProId && n.UserId == negotiationDto.UserId && n.Status == "Accepted");
+                .FirstOrDefaultAsync(n => n.ProId == negotiationDto.ProId && n.UserId == UserId && n.Status == "Accepted");
 
             if (acceptedNegotiation != null)
             {
@@ -223,7 +231,7 @@ namespace ecommerce_webapp_cs.Controllers
             }
 
             var existingNegotiation = await _context.Negotiations
-                .FirstOrDefaultAsync(n => n.ProId == negotiationDto.ProId && n.UserId == negotiationDto.UserId);
+                .FirstOrDefaultAsync(n => n.ProId == negotiationDto.ProId && n.UserId == UserId);
 
             if (existingNegotiation != null)
             {
@@ -236,7 +244,7 @@ namespace ecommerce_webapp_cs.Controllers
                 var newNegotiation = new Negotiation
                 {
                     ProId = negotiationDto.ProId,
-                    UserId = negotiationDto.UserId,
+                    UserId = UserId, // Use the UserId from session
                     NegotiatedPrice = negotiationDto.NegotiatedPrice,
                     Status = "Pending"
                 };
@@ -246,6 +254,7 @@ namespace ecommerce_webapp_cs.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Message = "Negotiation submitted successfully." });
         }
+
 
 
         [HttpGet("getnegotiation/{negotiationId}")]

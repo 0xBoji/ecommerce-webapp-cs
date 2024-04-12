@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ecommerce_webapp_cs.Controllers
@@ -60,6 +61,16 @@ namespace ecommerce_webapp_cs.Controllers
         [HttpPost]
         public async Task<IActionResult> PostProduct([FromForm] ProductModel productDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (productDto.Price < 1 || productDto.StockQuantity < 1)
+            {
+                return BadRequest("Price and Stock Quantity must be greater than 0.");
+            }
+
             try
             {
                 var product = new Product
@@ -68,23 +79,24 @@ namespace ecommerce_webapp_cs.Controllers
                     Description = productDto.Description,
                     Price = productDto.Price,
                     StockQuantity = productDto.StockQuantity,
-                    CreationDate = DateTime.UtcNow, // Set CreationDate here
+                    CreationDate = DateTime.UtcNow,
                     ProImg1 = await SaveImage(productDto.ProImg1),
                     ProImg2 = await SaveImage(productDto.ProImg2),
                     ProImg3 = await SaveImage(productDto.ProImg3),
                 };
 
                 // Generate ProId if necessary
-                product.ProId = GenerateRandomString(6);
+                product.ProId = GenerateRandomString(7);
 
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetProduct", new { id = product.ProId }, product);
+                return CreatedAtAction(nameof(GetProduct), new { id = product.ProId }, product);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while processing your request.");
+                // Log the exception (Consider using a logging framework/library)
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
@@ -209,7 +221,7 @@ namespace ecommerce_webapp_cs.Controllers
 
         private string GenerateRandomString(int length)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
