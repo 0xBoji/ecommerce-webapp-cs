@@ -10,7 +10,9 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="EPPlus" Version="7.1.0" />
+    <PackageReference Include="Ipfs.Core" Version="0.55.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
@@ -29,6 +31,9 @@
 
   <ItemGroup>
     <Folder Include="Models\Entities\" />
+    <Folder Include="Resources\Images\" />
+    <Folder Include="Resources\BlogImages\" />
+    <Folder Include="Resources\UserImages\" />
   </ItemGroup>
 
 </Project>

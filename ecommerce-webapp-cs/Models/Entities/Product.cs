@@ -21,6 +21,8 @@ public partial class Product
 
     public int StockQuantity { get; set; }
 
+    public DateTime? CreationDate { get; set; }
+
     public virtual ICollection<Negotiation> Negotiations { get; set; } = new List<Negotiation>();
 
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

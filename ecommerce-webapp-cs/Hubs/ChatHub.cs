@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿/*using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -40,16 +40,17 @@ public class ChatHub : Hub
 			await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Employees");
 		}
 	}
-
+	//connect
 	public override async Task OnConnectedAsync()
 	{
 		await JoinRoleGroup();
 		await base.OnConnectedAsync();
 	}
-		//leave
+    //leave
 	public override async Task OnDisconnectedAsync(Exception? exception)
 	{
 		await LeaveRoleGroup();
 		await base.OnDisconnectedAsync(exception);
 	}
 }
+*/

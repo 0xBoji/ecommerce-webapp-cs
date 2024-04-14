@@ -51,7 +51,7 @@ public partial class ArtsContext : DbContext
     {
         modelBuilder.Entity<AuditLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__AuditLog__5E5499A8F8638707");
+            entity.HasKey(e => e.LogId).HasName("PK__AuditLog__5E5499A8BADE0EBC");
 
             entity.ToTable("AuditLog");
 
@@ -70,12 +70,12 @@ public partial class ArtsContext : DbContext
 
             entity.HasOne(d => d.ActionByNavigation).WithMany(p => p.AuditLogs)
                 .HasForeignKey(d => d.ActionBy)
-                .HasConstraintName("FK__AuditLog__Action__70DDC3D8");
+                .HasConstraintName("FK__AuditLog__Action__35DCF99B");
         });
 
         modelBuilder.Entity<BlogComment>(entity =>
         {
-            entity.HasKey(e => e.CommentId).HasName("PK__BlogComm__C3B4DFAAD2822E2C");
+            entity.HasKey(e => e.CommentId).HasName("PK__BlogComm__C3B4DFAA47F05230");
 
             entity.Property(e => e.CommentId).HasColumnName("CommentID");
             entity.Property(e => e.CommentDate)
@@ -87,17 +87,17 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Post).WithMany(p => p.BlogComments)
                 .HasForeignKey(d => d.PostId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__BlogComme__PostI__787EE5A0");
+                .HasConstraintName("FK__BlogComme__PostI__3D7E1B63");
 
             entity.HasOne(d => d.User).WithMany(p => p.BlogComments)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__BlogComme__UserI__797309D9");
+                .HasConstraintName("FK__BlogComme__UserI__3E723F9C");
         });
 
         modelBuilder.Entity<BlogPost>(entity =>
         {
-            entity.HasKey(e => e.PostId).HasName("PK__BlogPost__AA126038759ABEF8");
+            entity.HasKey(e => e.PostId).HasName("PK__BlogPost__AA126038E3C9FB66");
 
             entity.Property(e => e.PostId).HasColumnName("PostID");
             entity.Property(e => e.Content).HasColumnType("text");
@@ -111,12 +111,12 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.BlogPosts)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__BlogPosts__UserI__74AE54BC");
+                .HasConstraintName("FK__BlogPosts__UserI__39AD8A7F");
         });
 
         modelBuilder.Entity<ChatMessage>(entity =>
         {
-            entity.HasKey(e => e.MessageId).HasName("PK__ChatMess__C87C037C33BCFA2E");
+            entity.HasKey(e => e.MessageId).HasName("PK__ChatMess__C87C037C78D206A6");
 
             entity.Property(e => e.MessageId).HasColumnName("MessageID");
             entity.Property(e => e.FromUserId).HasColumnName("FromUserID");
@@ -130,22 +130,22 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.FromUser).WithMany(p => p.ChatMessageFromUsers)
                 .HasForeignKey(d => d.FromUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ChatMessa__FromU__5812160E");
+                .HasConstraintName("FK__ChatMessa__FromU__1D114BD1");
 
             entity.HasOne(d => d.Session).WithMany(p => p.ChatMessages)
                 .HasForeignKey(d => d.SessionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ChatMessa__Sessi__571DF1D5");
+                .HasConstraintName("FK__ChatMessa__Sessi__1C1D2798");
 
             entity.HasOne(d => d.ToUser).WithMany(p => p.ChatMessageToUsers)
                 .HasForeignKey(d => d.ToUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ChatMessa__ToUse__59063A47");
+                .HasConstraintName("FK__ChatMessa__ToUse__1E05700A");
         });
 
         modelBuilder.Entity<ChatSession>(entity =>
         {
-            entity.HasKey(e => e.SessionId).HasName("PK__ChatSess__C9F49270AEAE9D6B");
+            entity.HasKey(e => e.SessionId).HasName("PK__ChatSess__C9F49270B1298E92");
 
             entity.Property(e => e.SessionId).HasColumnName("SessionID");
             entity.Property(e => e.EndDate).HasColumnType("datetime");
@@ -159,14 +159,14 @@ public partial class ArtsContext : DbContext
                     r => r.HasOne<User>().WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__SessionPa__UserI__5CD6CB2B"),
+                        .HasConstraintName("FK__SessionPa__UserI__21D600EE"),
                     l => l.HasOne<ChatSession>().WithMany()
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__SessionPa__Sessi__5BE2A6F2"),
+                        .HasConstraintName("FK__SessionPa__Sessi__20E1DCB5"),
                     j =>
                     {
-                        j.HasKey("SessionId", "UserId").HasName("PK__SessionP__188C1EBA7272D31F");
+                        j.HasKey("SessionId", "UserId").HasName("PK__SessionP__188C1EBAA04E6972");
                         j.ToTable("SessionParticipants");
                         j.IndexerProperty<int>("SessionId").HasColumnName("SessionID");
                         j.IndexerProperty<int>("UserId").HasColumnName("UserID");
@@ -175,7 +175,7 @@ public partial class ArtsContext : DbContext
 
         modelBuilder.Entity<Negotiation>(entity =>
         {
-            entity.HasKey(e => e.NegotiationId).HasName("PK__Negotiat__4C30331F9CBF25F4");
+            entity.HasKey(e => e.NegotiationId).HasName("PK__Negotiat__4C30331F6C5441F5");
 
             entity.Property(e => e.NegotiationId).HasColumnName("NegotiationID");
             entity.Property(e => e.LastUpdated).HasColumnType("datetime");
@@ -194,17 +194,17 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Pro).WithMany(p => p.Negotiations)
                 .HasForeignKey(d => d.ProId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Negotiati__ProID__7D439ABD");
+                .HasConstraintName("FK__Negotiati__ProID__4242D080");
 
             entity.HasOne(d => d.User).WithMany(p => p.Negotiations)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Negotiati__UserI__7E37BEF6");
+                .HasConstraintName("FK__Negotiati__UserI__4336F4B9");
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__C3905BAFF02FC80E");
+            entity.HasKey(e => e.OrderId).HasName("PK__Orders__C3905BAF09C691A0");
 
             entity.Property(e => e.OrderId)
                 .HasMaxLength(16)
@@ -228,12 +228,12 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Orders__UserID__4222D4EF");
+                .HasConstraintName("FK__Orders__UserID__07220AB2");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.HasKey(e => e.OrderItemId).HasName("PK__OrderIte__57ED06A100F3E09E");
+            entity.HasKey(e => e.OrderItemId).HasName("PK__OrderIte__57ED06A195B413BD");
 
             entity.Property(e => e.OrderItemId)
                 .HasMaxLength(8)
@@ -249,17 +249,17 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderItem__Order__46E78A0C");
+                .HasConstraintName("FK__OrderItem__Order__0BE6BFCF");
 
             entity.HasOne(d => d.Pro).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.ProId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderItem__ProID__47DBAE45");
+                .HasConstraintName("FK__OrderItem__ProID__0CDAE408");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A58237CB105");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A58037977AC");
 
             entity.Property(e => e.PaymentId).HasColumnName("PaymentID");
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
@@ -283,16 +283,17 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Payments__OrderI__4CA06362");
+                .HasConstraintName("FK__Payments__OrderI__119F9925");
         });
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.ProId).HasName("PK__Products__620295F0AAFCB5F8");
+            entity.HasKey(e => e.ProId).HasName("PK__Products__620295F006A6C81A");
 
             entity.Property(e => e.ProId)
                 .HasMaxLength(7)
                 .HasColumnName("ProID");
+            entity.Property(e => e.CreationDate).HasColumnType("datetime");
             entity.Property(e => e.Description).IsUnicode(false);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProImg1)
@@ -311,7 +312,7 @@ public partial class ArtsContext : DbContext
 
         modelBuilder.Entity<ProductReview>(entity =>
         {
-            entity.HasKey(e => e.ReviewId).HasName("PK__ProductR__74BC79AE95F3A51D");
+            entity.HasKey(e => e.ReviewId).HasName("PK__ProductR__74BC79AECA25D60A");
 
             entity.Property(e => e.ReviewId).HasColumnName("ReviewID");
             entity.Property(e => e.ProductId)
@@ -326,17 +327,17 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Product).WithMany(p => p.ProductReviews)
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductRe__Produ__619B8048");
+                .HasConstraintName("FK__ProductRe__Produ__269AB60B");
 
             entity.HasOne(d => d.User).WithMany(p => p.ProductReviews)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductRe__UserI__628FA481");
+                .HasConstraintName("FK__ProductRe__UserI__278EDA44");
         });
 
         modelBuilder.Entity<Refund>(entity =>
         {
-            entity.HasKey(e => e.RefundId).HasName("PK__Refunds__725AB9001B96CA7B");
+            entity.HasKey(e => e.RefundId).HasName("PK__Refunds__725AB90027EA8A42");
 
             entity.Property(e => e.RefundId).HasColumnName("RefundID");
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
@@ -356,12 +357,12 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.Refunds)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Refunds__OrderID__66603565");
+                .HasConstraintName("FK__Refunds__OrderID__2B5F6B28");
         });
 
         modelBuilder.Entity<ReturnRequest>(entity =>
         {
-            entity.HasKey(e => e.RequestId).HasName("PK__ReturnRe__33A8519AC6154A66");
+            entity.HasKey(e => e.RequestId).HasName("PK__ReturnRe__33A8519ABD946F2D");
 
             entity.Property(e => e.RequestId).HasColumnName("RequestID");
             entity.Property(e => e.OrderId)
@@ -380,18 +381,18 @@ public partial class ArtsContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.ReturnRequests)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ReturnReq__Order__6C190EBB");
+                .HasConstraintName("FK__ReturnReq__Order__3118447E");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC0F229B31");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC31450F6C");
 
-            entity.HasIndex(e => e.Username, "UQ__Users__536C85E400BA4CBF").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4F94CCDDF").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D1053474057549").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534C9D634B7").IsUnique();
 
-            entity.HasIndex(e => e.PhoneNum, "UQ__Users__DF8F1A0243B823F8").IsUnique();
+            entity.HasIndex(e => e.PhoneNum, "UQ__Users__DF8F1A02E4847944").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.AddressLine1)
