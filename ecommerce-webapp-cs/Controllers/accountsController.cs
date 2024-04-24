@@ -60,69 +60,32 @@ public class accountsController : ControllerBase
 		return BadRequest(ModelState);
 	}
 
-    private async Task SendVerificationEmail(string email, string link)
-    {
-        using (var client = new SmtpClient())
-        {
-            // Configure your SMTP client settings (host, port, credentials...)
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress("pichstudent2004@gmail.com"),
-                Subject = "Verify your email",
-                Body = $"<a href=\"{link}\">Click here to verify your email</a>",
-                IsBodyHtml = true,
-            };
-            mailMessage.To.Add(email);
-
-            await client.SendMailAsync(mailMessage);
-        }
-    }
-
-    [HttpGet("verifyemail")]
-    public async Task<IActionResult> VerifyEmail(string token)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
-
-        if (user == null)
-        {
-            return NotFound("Verification failed. Invalid token.");
-        }
-
-        user.EmailVerified = true;
-        user.EmailVerificationToken = null; // Clear the token after verification
-
-        await _context.SaveChangesAsync();
-
-        return Ok("Email verified successfully.");
-    }
-
     // Login endpoint
     [HttpPost("login")]
-	public async Task<IActionResult> Login([FromBody] LoginModel model)
-	{
-		if (ModelState.IsValid)
-		{
-			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+    public async Task<IActionResult> Login([FromBody] LoginModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
-			if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
-			{
-		
-				HttpContext.Session.SetString("UserID", user.UserId.ToString());
-				HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Useremail", user.Email);
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == model.Email);
+
+        if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+        {
+            return Unauthorized(new { message = "Invalid login attempt" });
+        }
+
+        HttpContext.Session.SetString("UserID", user.UserId.ToString());
+        HttpContext.Session.SetString("Username", user.Username);
+        HttpContext.Session.SetString("UserEmail", user.Email);
 
 
-                return Ok(new { message = "Login successful" });
-			}
+        return Ok(new { message = "Login successful", userId = user.UserId, username = user.Username });
+    }
 
-			return Unauthorized(new { message = "Invalid login attempt" });
-		}
-
-		return BadRequest(ModelState);
-	}
-
-    [HttpPost("login-admin")]
+[HttpPost("login-admin")]
     public async Task<IActionResult> LoginAdmin([FromBody] LoginModel model)
     {
         if (ModelState.IsValid)

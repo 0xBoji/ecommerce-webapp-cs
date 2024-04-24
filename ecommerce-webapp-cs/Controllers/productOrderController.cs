@@ -303,6 +303,7 @@ namespace ecommerce_webapp_cs.Controllers
             // Optionally, you might want to update the related product's price or order item's price here
             return Ok(new { Message = $"Negotiation {negotiationId} accepted." });
         }
+
         [HttpGet("all-negotiations")]
         public async Task<IActionResult> GetAllNegotiations()
         {
