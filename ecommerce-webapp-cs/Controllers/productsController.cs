@@ -305,7 +305,6 @@ namespace ecommerce_webapp_cs.Controllers
         }
 
 
-
         [HttpGet("export")]
         public async Task<IActionResult> ExportProductsToExcel()
         {
@@ -340,6 +339,5 @@ namespace ecommerce_webapp_cs.Controllers
 
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
         }
-
     }
 }

@@ -60,43 +60,6 @@ public class accountsController : ControllerBase
         return BadRequest(ModelState);
     }
 
-    private async Task SendVerificationEmail(string email, string link)
-    {
-        using (var client = new SmtpClient())
-        {
-            // Configure your SMTP client settings (host, port, credentials...)
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress("pichstudent2004@gmail.com"),
-                Subject = "Verify your email",
-                Body = $"<a href=\"{link}\">Click here to verify your email</a>",
-                IsBodyHtml = true,
-            };
-            mailMessage.To.Add(email);
-
-            await client.SendMailAsync(mailMessage);
-        }
-    }
-
-    [HttpGet("verifyemail")]
-    public async Task<IActionResult> VerifyEmail(string token)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
-
-        if (user == null)
-        {
-            return NotFound("Verification failed. Invalid token.");
-        }
-
-        user.EmailVerified = true;
-        user.EmailVerificationToken = null; // Clear the token after verification
-
-        await _context.SaveChangesAsync();
-
-        return Ok("Email verified successfully.");
-    }
-
     // Login endpoint
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -123,7 +86,7 @@ public class accountsController : ControllerBase
     }
 
     [HttpPost("login-admin")]
-    public async Task<IActionResult> LoginAdmin([FromBody] LoginModel model)
+    public async Task<IActionResult> LoginAdmin([FromBody] LoginAdminModel model)
     {
         if (ModelState.IsValid)
         {
@@ -270,6 +233,13 @@ public class accountsController : ControllerBase
                     user.UserImg = imagePath;
                 }
 
+                user.CompanyName = model.CompanyName;
+                user.AddressLine1 = model.AddressLine1;
+                user.Country = model.Country;
+                user.City = model.City;
+                user.PostalCode = model.PostalCode;
+                user.Province = model.Province;
+
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
 
@@ -281,6 +251,39 @@ public class accountsController : ControllerBase
         {
             return StatusCode(500, new { message = "An error occurred while updating the profile. Please try again." });
         }
+    }
+
+    [HttpGet("profile/edit")]
+    public async Task<IActionResult> GetProfileForEdit()
+    {
+        var userIdString = HttpContext.Session.GetString("UserID");
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized(new { message = "User is not authenticated" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var profileModel = new ProfileModel
+        {
+            Username = user.Username,
+            Firstname = user.Firstname,
+            Lastname = user.Lastname,
+            PhoneNum = user.PhoneNum,
+            UserImg = user.UserImg,
+            CompanyName = user.CompanyName,
+            AddressLine1 = user.AddressLine1,
+            Country = user.Country,
+            Province = user.Province,
+            City = user.City,
+            PostalCode = user.PostalCode
+        };
+
+        return Ok(profileModel);
     }
 
     private async Task<string> SaveUserImage(IFormFile imageFile)
@@ -330,39 +333,6 @@ public class accountsController : ControllerBase
     }
 
 
-
-    [HttpGet("profile/edit")]
-    public async Task<IActionResult> GetProfileForEdit()
-    {
-        var userIdString = HttpContext.Session.GetString("UserID");
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-        {
-            return Unauthorized(new { message = "User is not authenticated" });
-        }
-
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null)
-        {
-            return NotFound(new { message = "User not found" });
-        }
-
-        var profileModel = new ProfileModel
-        {
-            Username = user.Username,
-            Firstname = user.Firstname,
-            Lastname = user.Lastname,
-            PhoneNum = user.PhoneNum,
-            UserImg = user.UserImg,
-            CompanyName = user.CompanyName,
-            AddressLine1 = user.AddressLine1,
-            Country = user.Country,
-            Province = user.Province,
-            City = user.City,
-            PostalCode = user.PostalCode
-        };
-
-        return Ok(profileModel);
-    }
     [HttpGet("session/userId")]
     public IActionResult GetUserIdFromSession()
     {

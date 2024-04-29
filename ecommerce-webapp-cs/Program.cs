@@ -18,7 +18,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+});
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 //cookie
 .AddCookie(options =>
 {
@@ -30,6 +35,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = builder.Configuration["GoogleKeys:ClientId"];
     options.ClientSecret = builder.Configuration["GoogleKeys:ClientSecret"];
 })
+
 
 .AddJwtBearer(options =>
 {
@@ -63,8 +69,7 @@ builder.Services.AddCors(options =>
     });
 });
 //connectionstring here
-builder.Services.AddDbContext<ArtsContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
+builder.Services.AddDbContext<ArtsContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 builder.Services.AddScoped<PinataService>();
 
